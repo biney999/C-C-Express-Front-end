@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+{{!-- Style display properties are used to show and hide elements depending on the status of the app --}}
+
+<body>
+    <h1>Convert and Compress Express</h1>
+    <div>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <h2>Select a video</h2>
+            <input type="file" id="fileInput" accept=".mp4, .mov, .avi, .mkv, .flv, .ogv, .webm, /video*" required>
+            <p>Supported file types: MP4, MOV, AVI, MKV, FLV, OGV, WEBM & more™</p>
+            <!-- Form options -->
+            <h2>And a file type</h2>
+            <select name="outputFormat" id="outputFormat">
+                <option value="mp4">MP4</option>
+                <option value="mov">MOV</option>
+                <option value="avi">AVI</option>
+                <option value="flv">FLV</option>
+                <option value="ogv">OGV</option>
+                <option value="webm">WEBM</option>
+                <option value="h264">H264</option>
+            </select>
+            <button type="button" id="submitFile" onclick="getPresignedURL()" style="display: inline;">Press to Compress</button>
+        </form>
+        <div class="Message">
+            <p>Thank you for using our application</p>
+            <p>You can technically input any video file and it will likely convert<br>Disclaimer that most encoding
+                configurations are not supported without a program like VLC</p>
+        </div>
+        {{!-- Elements to be hidden during the process with style --}}
+    </div>
+    <div id="uploadingResult" style="display: none;">
+        <p>Uploading now!</p>
+    </div>
+    <div id="uploadResult" style="display: none;">
+        <p>File uploaded, hold on tight!</p>
+    </div>
+    <div id="readiedResult" style="display: none;">
+        <p>HEY LOOK OVER HERE....<a id="finalLink" href="" target="_blank">it's your file</a></p>
+    </div>
+    <div id="failResult" style="display: none;">
+        <p>Oops.... Seems this file doesn't play very nice or something has gone horribly wrong. Try something else.</p>
+    </div>
+    {{!-- JS script for uploading video and recieving link --}}
+    <script>
+        function getPresignedURL() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadForm = document.getElementById('uploadForm');
+            const uploadingResult = document.getElementById('uploadingResult');
+            const uploadResult = document.getElementById('uploadResult');
+            const readiedResult = document.getElementById('readiedResult');
+            const selectedOutputFormat = outputFormat.value;
+            failResult.style.display = 'none';
+            // Require a file
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a video file.');
+                return;
+            }
+            const timestamp = new Date().getTime(); // Generate a timestamp
+            const fileName = timestamp + "_" + file.name; // Add the timestamp to the filename
+            axios.post('http://localhost:3000/generate-presigned-url', { fileName }) //change this later
+                .then((response) => {
+                    //Hide and show various Elements
+                    uploadForm.style.display = 'none';
+                    readiedResult.style.display = 'none'; 
+                    submitFile.style.display = 'none';
+                    uploadingResult.style.display = 'block';
+                    const uploadURL = response.data.uploadURL;
+                    console.log(uploadURL);
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    axios.put(uploadURL, file, {
+                        headers: {
+                            'Content-Type': "application/octet-stream", // Set the content type for videos
+                        },
+                    }).then(() => {
+                        uploadResult.style.display = 'block';
+                        uploadingResult.style.display = 'none';
+                        // Send name, URL and Transformation for processing
+                        axios.post(`http://localhost:3000/processing/${timestamp}`, { fileName, uploadURL, selectedOutputFormat }) //change this too
+                            .then((response) => {
+                                const finalLink = response.data.finalLink;
+                                console.log(finalLink);
+                                const readiedResult = document.getElementById('readiedResult');
+                                const finalLinkElement = document.getElementById('finalLink');
+
+                                if (finalLink.includes("ERROR")) {
+                                    // If finalLink contains "ERROR", display the failResult element
+                                    failResult.style.display = 'block';
+                                    uploadResult.style.display = 'none';
+                                    readiedResult.style.display = 'none';
+                                    submitFile.style.display = 'inline';
+                                    uploadForm.style.display = 'inline';
+                                    // Else display the link
+                                } else {
+                                    finalLinkElement.href = finalLink;
+                                    uploadResult.style.display = 'none';
+                                    readiedResult.style.display = 'block';
+                                    submitFile.style.display = 'inline';
+                                    uploadForm.style.display = 'inline';
+                                }
+                            })
+                            // Render Error message
+                            .catch((error) => {
+                                console.error('Error getting finalLink:', error);
+                                failResult.style.display = 'block';
+                                uploadForm.style.display = 'inline';
+                            });
+                    }).catch((error) => {
+                        console.error('Error uploading video:', error);
+                        failResult.style.display = 'block';
+                        uploadForm.style.display = 'inline';
+
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error getting presigned URL:', error);
+                    failResult.style.display = 'block';
+                    uploadForm.style.display = 'inline';
+
+                });
+        }
+    </script>
+</body>
+
+</html>

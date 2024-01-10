@@ -1,0 +1,79 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Overpass&family=Plus+Jakarta+Sans:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik&display=swap');
+
+body, h1, h2, p {
+  margin: 10;
+  padding: 0;
+}
+
+body {
+  font-family: 'Rubik', sans-serif;
+  background-color: #efebe4;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 24px;
+  font-family: 'Rubik', sans-serif;
+  color: #585179;
+  margin-top: 10px;
+}
+
+h2 {
+  font-family: 'Rubik', sans-serif;
+  font-size: 20px;
+  color: #333;
+}
+
+
+#uploadForm {
+  margin-top: 20px;
+}
+
+select {
+  padding: 10px 20px;
+  background-color: #fff;
+  border: 1px solid #caced1;
+  border-radius: 15px;
+  color: #000;
+}
+
+#fileInput {
+  display: block;
+  margin: 10px auto;
+}
+
+#outputFormat {
+  display: block;
+  margin: 10px auto;
+}
+
+#submitFile {
+  display: block;
+  border-radius: 15px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: bold;
+  margin: 10px auto;
+  background-color: #cacbff;
+  color: #1f1e32;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+
+
+#uploadResult, #readiedResult, #failResult, #uploadingResult{
+  margin: 20px auto;
+  font-family: 'Rubik', sans-serif;
+  padding: 10px;
+  background-color: #cacbff;
+  display: none;
+}
+
+#finalLink {
+  color: #0074d9;
+}
+
